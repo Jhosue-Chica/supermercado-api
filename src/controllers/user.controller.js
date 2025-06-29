@@ -76,9 +76,12 @@ exports.getUserById = async (req, res) => {
  */
 exports.createUser = async (req, res) => {
   try {
-    // Solo administradores pueden crear ciertos tipos de usuarios
-    if (req.body.role !== 'customer' && req.user.role !== 'admin') {
-      logger.warn(`Usuario no autorizado (${req.user.username}) intentó crear usuario con rol ${req.body.role}`);
+    // Verificar si es una petición con API key o token JWT
+    const isApiKeyAuth = req.headers['x-api-key'] && !req.user;
+    
+    // Solo administradores pueden crear ciertos tipos de usuarios (excepto cuando se usa API key)
+    if (!isApiKeyAuth && req.body.role !== 'customer' && (!req.user || req.user.role !== 'admin')) {
+      logger.warn(`Usuario no autorizado (${req.user?.username || 'desconocido'}) intentó crear usuario con rol ${req.body.role}`);
       return res.status(403).json({ message: 'No autorizado para crear este tipo de usuario' });
     }
     
