@@ -147,9 +147,6 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-/**
- * Eliminar un producto (cambio a inactivo o eliminación física)
- */
 exports.deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;

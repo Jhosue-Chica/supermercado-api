@@ -1,12 +1,8 @@
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 
-// Lista de API keys válidas (en producción deberían estar en base de datos)
 const validApiKeys = ['sk_test_supermercado123', 'sk_prod_supermercado456'];
 
-/**
- * Middleware para verificar JWT token
- */
 exports.verifyToken = (req, res, next) => {
   const token = req.headers['x-access-token'] || req.headers['authorization'];
   
@@ -16,7 +12,6 @@ exports.verifyToken = (req, res, next) => {
   }
 
   try {
-    // Quitar el prefijo Bearer si existe
     const tokenValue = token.startsWith('Bearer ') ? token.slice(7) : token;
     const decoded = jwt.verify(tokenValue, process.env.JWT_SECRET || 'supermercado_secret_key');
     req.user = decoded;
@@ -28,9 +23,6 @@ exports.verifyToken = (req, res, next) => {
   }
 };
 
-/**
- * Middleware para verificar API key
- */
 exports.verifyApiKey = (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
   
@@ -48,9 +40,6 @@ exports.verifyApiKey = (req, res, next) => {
   next();
 };
 
-/**
- * Middleware para verificar cualquier método de autenticación (JWT o API key)
- */
 exports.verifyAuth = (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
   const token = req.headers['x-access-token'] || req.headers['authorization'];
