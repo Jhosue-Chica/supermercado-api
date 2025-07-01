@@ -54,18 +54,15 @@ app.use((err, req, res, next) => {
   });
 });
 
-// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     logger.info('Conexión a MongoDB establecida');
-    // Inicializar datos por defecto si es necesario
     await dbInit.initializeDatabase();
   })
   .catch((err) => {
     logger.error(`Error de conexión a MongoDB: ${err.message}`);
 });
 
-// Start server
 app.listen(PORT, () => {
   logger.info(`Servidor ejecutándose en el puerto ${PORT}`);
 });

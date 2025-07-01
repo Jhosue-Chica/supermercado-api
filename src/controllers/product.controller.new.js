@@ -72,28 +72,23 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-/**
- * Crear un nuevo producto
- */
+
 exports.createProduct = async (req, res) => {
   try {
     const productData = req.body;
     logger.info(`Creando nuevo producto: ${productData.name}`);
     
-    // Validar datos requeridos
     if (!productData.name || !productData.price || !productData.category) {
       logger.warn('Intento de crear producto con datos incompletos');
       return res.status(400).json({ message: 'Se requiere nombre, precio y categoría' });
     }
     
-    // Verificar que el código no esté duplicado
     const existingProduct = await Product.findOne({ code: productData.code });
     if (existingProduct) {
       logger.warn(`Intento de crear producto con código duplicado: ${productData.code}`);
       return res.status(400).json({ message: 'El código del producto ya existe' });
     }
     
-    // Crear nuevo producto
     const newProduct = new Product(productData);
     await newProduct.save();
     
@@ -105,23 +100,18 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-/**
- * Actualizar un producto existente
- */
 exports.updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const productData = req.body;
     logger.info(`Actualizando producto con ID: ${productId}`);
     
-    // Comprobar existencia del producto
     const product = await Product.findById(productId);
     if (!product) {
       logger.warn(`Intento de actualizar producto inexistente con ID: ${productId}`);
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
     
-    // Verificar si el código actualizado no está duplicado
     if (productData.code && productData.code !== product.code) {
       const existingProduct = await Product.findOne({ code: productData.code });
       if (existingProduct) {
@@ -130,7 +120,6 @@ exports.updateProduct = async (req, res) => {
       }
     }
     
-    // Actualizar producto
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       productData,
@@ -145,16 +134,12 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-/**
- * Eliminar un producto (cambio a inactivo o eliminación física)
- */
 exports.deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const { permanent } = req.query;
     logger.info(`Eliminando producto con ID: ${productId}, eliminación permanente: ${permanent === 'true'}`);
     
-    // Comprobar existencia del producto
     const product = await Product.findById(productId);
     if (!product) {
       logger.warn(`Intento de eliminar producto inexistente con ID: ${productId}`);
@@ -162,12 +147,10 @@ exports.deleteProduct = async (req, res) => {
     }
     
     if (permanent === 'true') {
-      // Eliminación física del producto
       await Product.findByIdAndDelete(productId);
       logger.info(`Producto eliminado permanentemente: ${productId}`);
       return res.status(200).json({ message: 'Producto eliminado permanentemente' });
     } else {
-      // Marcar como inactivo
       product.isActive = false;
       await product.save();
       logger.info(`Producto marcado como inactivo: ${productId}`);
@@ -179,9 +162,6 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-/**
- * Ajustar stock de un producto
- */
 exports.adjustStock = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -206,7 +186,6 @@ exports.adjustStock = async (req, res) => {
     } else if (operation === 'subtract') {
       newStock = product.stock - Number(quantity);
       
-      // Validar stock suficiente
       if (newStock < 0) {
         logger.warn(`Intento de reducir stock a cantidad negativa para producto ${productId}`);
         return res.status(400).json({ message: 'Stock insuficiente para realizar esta operación' });
@@ -218,7 +197,6 @@ exports.adjustStock = async (req, res) => {
       return res.status(400).json({ message: 'Operación inválida. Valores permitidos: add, subtract, set' });
     }
     
-    // Actualizar stock
     product.stock = newStock;
     await product.save();
     
